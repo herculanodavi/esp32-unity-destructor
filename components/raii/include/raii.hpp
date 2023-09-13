@@ -1,5 +1,6 @@
 #pragma once
 
+#include "esp_log.h"
 #include <optional>
 
 /**
@@ -14,7 +15,10 @@ struct RAII
   };
 
   // Default constructor
-  RAII() = default;
+  RAII()
+  {
+    ESP_LOGI(TAG, "Constructor");
+  }
 
   // Copy constructor and assignment operator are deleted.
   RAII(const RAII& other) = delete;
@@ -24,11 +28,13 @@ struct RAII
   // Move constructor and assignment operator
   RAII(RAII&& other)
   {
+    ESP_LOGI(TAG, "Move constructor");
     other.shouldDeinit = false;
   }
 
   RAII& operator=(RAII&& other)
   {
+    ESP_LOGI(TAG, "Move assign operator");
     other.shouldDeinit = false;
     return *this;
   }
@@ -36,11 +42,16 @@ struct RAII
   // Destructor releases resource
   ~RAII()
   {
+    
     if (shouldDeinit) {
+      ESP_LOGI(TAG, "Destructor frees resource");
       resourceState = ResourceState::FREE;
+    } else {
+      ESP_LOGI(TAG, "Destructor doesn't free resource");
     }
   }
 
+  static constexpr const char* TAG = "RAII";
   inline static ResourceState resourceState = ResourceState::FREE;
   bool shouldDeinit = true;
 };
